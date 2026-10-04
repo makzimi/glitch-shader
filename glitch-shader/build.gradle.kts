@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.vanniktech.mavenPublish)
 }
 
 android {
@@ -34,18 +35,43 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.animation.graphics)
-    implementation(libs.kotlinx.collections.immutable)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
+    implementation(libs.androidx.animation.core)
+}
+
+mavenPublishing {
+    publishToMavenCentral()
+    if (providers.gradleProperty("signingInMemoryKey").isPresent) {
+        signAllPublications()
+    }
+
+    coordinates("io.github.makzimi", "glitch-shader", "0.1.0")
+
+    pom {
+        name.set("Glitch Shader")
+        description.set("An AGSL glitch effect for Jetpack Compose: slice displacement, RGB split, scanline noise and colour bars.")
+        inceptionYear.set("2025")
+        url.set("https://github.com/makzimi/glitch-shader")
+        licenses {
+            license {
+                name.set("MIT License")
+                url.set("https://github.com/makzimi/glitch-shader/blob/main/LICENSE")
+                distribution.set("repo")
+            }
+        }
+        developers {
+            developer {
+                id.set("makzimi")
+                name.set("Maxim Kachinkin")
+                url.set("https://github.com/makzimi")
+            }
+        }
+        scm {
+            url.set("https://github.com/makzimi/glitch-shader")
+            connection.set("scm:git:git://github.com/makzimi/glitch-shader.git")
+            developerConnection.set("scm:git:ssh://git@github.com/makzimi/glitch-shader.git")
+        }
+    }
 }

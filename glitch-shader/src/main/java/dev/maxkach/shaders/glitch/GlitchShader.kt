@@ -46,18 +46,19 @@ vec2 applySliceOffset(vec2 uv) {
     return clamp(uv, 0.0, 1.0);
 }
 
-vec3 sampleRgbSplit(vec2 baseUv) {
+vec4 sampleRgbSplit(vec2 baseUv) {
     float splitAmount = 0.005 * rgbSplitIntensity;
 
     vec2 uvR = clamp(baseUv + vec2(-splitAmount, 0.0), 0.0, 1.0);
     vec2 uvG = baseUv;
     vec2 uvB = clamp(baseUv + vec2(splitAmount, 0.0), 0.0, 1.0);
 
-    vec3 cR = image.eval(uvR * imageSize).rgb;
-    vec3 cG = image.eval(uvG * imageSize).rgb;
-    vec3 cB = image.eval(uvB * imageSize).rgb;
+    vec4 cR = image.eval(uvR * imageSize);
+    vec4 cG = image.eval(uvG * imageSize);
+    vec4 cB = image.eval(uvB * imageSize);
 
-    return vec3(cR.r, cG.g, cB.b);
+    float a = cG.a;
+    return vec4(min(cR.r, a), cG.g, min(cB.b, a), a);
 }
 
 float verticalNoise(vec2 uv) {
@@ -76,48 +77,42 @@ vec4 getSolidColorBar(vec2 uv) {
     float rnd = rand2(vec2(intensity * realRandom, sliceY));
     if ((rnd * 2.5 + 0.5) < intensity) {
         if (realRandom > 0.67) {
-            return vec4(0.0, 1.0, 0.3, 1.0); // green (CRT phosphor green)
+            return vec4(0.0, 1.0, 0.3, 1.0);
         } else if (realRandom > 0.33) {
-            return vec4(1.0, 0.0, 0.85, 1.0); // magenta (chromatic aberration)
+            return vec4(1.0, 0.0, 0.85, 1.0);
         } else {
-            return vec4(0.0, 0.85, 1.0, 1.0); // cyan (slightly desaturated)
+            return vec4(0.0, 0.85, 1.0, 1.0);
         }
     }
 
-    return vec4(0.0, 0.0, 0.0, 0.0); // No solid color
+    return vec4(0.0, 0.0, 0.0, 0.0);
 }
 
 vec4 main(vec2 fragCoord) {
+    // image.eval is premultiplied. Keep the source alpha so transparent pixels stay transparent.
     vec2 uv = fragCoord / imageSize;
 
-    vec3 color;
-
-    // Check for solid color bars only if enabled
+    vec4 color = vec4(0.0);
+    bool isColorBar = false;
     if (colorBarsEnabled > 0.5) {
         vec4 solidColor = getSolidColorBar(uv);
         if (solidColor.a > 0.0) {
-            // Use solid color
-            color = solidColor.rgb;
-        } else {
-            // Use normal rendering with glitch effects
-            uv = applySliceOffset(uv);
-            color = sampleRgbSplit(uv);
+            color = solidColor;
+            isColorBar = true;
         }
-    } else {
-        // Use normal rendering with glitch effects
+    }
+    if (!isColorBar) {
         uv = applySliceOffset(uv);
         color = sampleRgbSplit(uv);
     }
 
-    // Apply post-processing effects to both solid colors and normal rendering
-    float vNoise = verticalNoise(uv);
-    color *= vNoise;
+    color.rgb *= verticalNoise(uv);
 
-    float brightness = dot(color, vec3(0.299, 0.587, 0.114));
+    float brightness = dot(color.rgb / max(color.a, 0.0001), vec3(0.299, 0.587, 0.114));
     float darkness = 1.0 - brightness;
-    vec3 tintColor = vec3(0.2, 0.3, 0.35);
-    color = mix(color, tintColor, darkness * 0.15 * intensity);
+    vec3 tintColor = vec3(0.2, 0.3, 0.35) * color.a;
+    color.rgb = mix(color.rgb, tintColor, darkness * 0.15 * intensity);
 
-    return vec4(color, 1.0);
+    return color;
 }
 """

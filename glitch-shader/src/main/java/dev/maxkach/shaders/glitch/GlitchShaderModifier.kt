@@ -23,7 +23,30 @@ fun Modifier.glitchShader(
     colorBarsEnabled: Boolean = false,
     rgbSplitIntensity: Float = 1f,
     isEnabled: Boolean = true,
+): Modifier = glitchShader(
+    intensity = { intensity },
+    slices = slices,
+    frameDuration = frameDuration,
+    noiseIntensity = noiseIntensity,
+    colorBarsEnabled = colorBarsEnabled,
+    rgbSplitIntensity = rgbSplitIntensity,
+    isEnabled = isEnabled,
+)
+
+@Composable
+fun Modifier.glitchShader(
+    intensity: () -> Float,
+    slices: Float = 16f,
+    frameDuration: Int = 16,
+    noiseIntensity: Float = 1f,
+    colorBarsEnabled: Boolean = false,
+    rgbSplitIntensity: Float = 1f,
+    isEnabled: Boolean = true,
 ): Modifier {
+    if (!isEnabled) {
+        return this
+    }
+
     val time: Animatable<Float, AnimationVector1D> = remember { Animatable(0f) }
     LaunchedEffect(frameDuration) {
         while (true) {
@@ -41,20 +64,16 @@ fun Modifier.glitchShader(
             val timeValue = time.value
             shader.setFloatUniform("time", timeValue)
             shader.setFloatUniform("imageSize", size.width, size.height)
-            shader.setFloatUniform("intensity", intensity)
+            shader.setFloatUniform("intensity", intensity())
             shader.setFloatUniform("slices", slices)
             shader.setFloatUniform("noiseIntensity", noiseIntensity)
             shader.setFloatUniform("colorBarsEnabled", if (colorBarsEnabled) 1f else 0f)
             shader.setFloatUniform("rgbSplitIntensity", rgbSplitIntensity)
             shader.setFloatUniform("realRandom", Random(seed = timeValue.toInt()).nextFloat())
 
-            renderEffect = if (isEnabled) {
-                RenderEffect
-                    .createRuntimeShaderEffect(shader, "image")
-                    .asComposeRenderEffect()
-            } else {
-                null
-            }
+            renderEffect = RenderEffect
+                .createRuntimeShaderEffect(shader, "image")
+                .asComposeRenderEffect()
         }
     )
 }
