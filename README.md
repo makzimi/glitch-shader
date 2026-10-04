@@ -10,3 +10,22 @@ An Android Compose library that applies the Glitch visual effect.
 
 - **`glitch-shader/`** - Library module with AGSL shader implementation
 - **`sample/`** - Demo app showcasing the glitch shader
+
+## Installation
+
+```kotlin
+dependencies {
+    implementation("io.github.makzimi:glitch-shader:0.1.0")
+}
+```
+
+Requires Android 13 (`minSdk 33`).
+
+## Usage
+
+```kotlin
+Modifier.glitchShader(intensity = 1f, colorBarsEnabled = true)
+
+// Animated intensity, read in the draw phase so a burst never recomposes:
+Modifier.glitchShader(intensity = { burst.value })
+```
