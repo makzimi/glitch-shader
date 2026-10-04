@@ -1,5 +1,8 @@
 # Glitch Shader
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.makzimi/glitch-shader)](https://central.sonatype.com/artifact/io.github.makzimi/glitch-shader)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 An Android Compose library that applies the Glitch visual effect.
 
 <image width="200px" src="https://github.com/user-attachments/assets/dbacb4ab-41bc-488b-ad04-953dae7208d8"/>
@@ -13,9 +16,38 @@ An Android Compose library that applies the Glitch visual effect.
 
 ## Installation
 
+The library is on Maven Central. Make sure `mavenCentral()` is in your repositories in `settings.gradle.kts`:
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+```
+
+Add the dependency:
+
 ```kotlin
 dependencies {
     implementation("io.github.makzimi:glitch-shader:0.1.0")
+}
+```
+
+Or with a version catalog:
+
+```toml
+[versions]
+glitchShader = "0.1.0"
+
+[libraries]
+glitch-shader = { group = "io.github.makzimi", name = "glitch-shader", version.ref = "glitchShader" }
+```
+
+```kotlin
+dependencies {
+    implementation(libs.glitch.shader)
 }
 ```
 
